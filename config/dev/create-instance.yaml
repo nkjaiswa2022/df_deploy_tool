@@ -1,0 +1,17 @@
+steps:
+  - name: python
+    id: dependency-installation
+    entrypoint: pip
+    args: ["install", "-r", "build/scripts/requirements.txt", "--user"]
+  - id: 'tf init'
+    name: 'hashicorp/terraform:1.3.4'
+    entrypoint: sh
+    args: ["-c","terraform -chdir=build/scripts/terraform init -migrate-state"]
+  - id: 'tf plan'
+    name: 'hashicorp/terraform:1.3.4'
+    entrypoint: sh
+    args: ["-c","terraform -chdir=build/scripts/terraform plan -var='build_date=${_BUILD_DATE}'  -out=plan_${_BUILD_DATE}_2.out"]
+  - id: 'tf apply'
+    name: 'hashicorp/terraform:1.3.4'
+    entrypoint: sh
+    args: ["-c","terraform -chdir=build/scripts/terraform apply plan_${_BUILD_DATE}_2.out"]

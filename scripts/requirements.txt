@@ -1,0 +1,7 @@
+requests
+urllib3
+pytz
+google-auth
+pandas
+openpyxl
+google-cloud-bigquery

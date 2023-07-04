@@ -1,0 +1,61 @@
+steps:
+  # Install dependencies
+  - name: python
+    id: dependency-installation
+    entrypoint: pip
+    args: ["install", "-r", "build/scripts/requirements.txt", "--user"]
+
+  # Invoke pipeline JSON validation
+  - name: python
+    id: pipeline-validation
+    entrypoint: python
+    args: [
+      "build/scripts/pipeline-validation.py",
+      "${_BUILD_DATE}"
+      ]
+    waitFor: 
+      - dependency-installation
+
+  # Invoke namespace validation   
+  - name: python
+    id: namespace-validation
+    entrypoint: python
+    args: [
+      "build/scripts/namespace-validation.py",
+      "${_BUILD_DATE}"
+    ]
+    waitFor: 
+      - pipeline-validation
+
+  # Validate plugins   
+  - name: python
+    id: plugin-validation
+    entrypoint: python
+    args: [
+      "build/scripts/plugin-validation.py",
+      "${_BUILD_DATE}"
+      ]
+    waitFor: 
+    - namespace-validation
+
+  # Deploy pipeline   
+  - name: python
+    id: pipeline-deployment
+    entrypoint: python
+    args: [
+      "build/scripts/pipeline-deployment.py",
+      "${_BUILD_DATE}"
+      ]
+    waitFor: 
+    - plugin-validation
+
+  # Execute BigQuery DDL   
+  - name: python
+    id: ddl-execution
+    entrypoint: python
+    args: [
+      "build/scripts/DDL-execution.py",
+      "${_BUILD_DATE}"
+      ]
+    waitFor: 
+    - plugin-validation

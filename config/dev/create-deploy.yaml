@@ -1,0 +1,72 @@
+steps:
+  # Install dependencies
+  - name: python
+    id: dependency-installation
+    entrypoint: pip
+    args: ["install", "-r", "build/scripts/requirements.txt", "--user"]
+
+  # Invoke namespace creation   
+  - name: python
+    id: namespace-creation
+    entrypoint: python
+    args: [
+      "build/scripts/namespace-creation.py",
+      "${_PROJECT_ID}",
+      "${_REGION}",
+      "${_SERVICE_ACCOUNT_FILE}",
+      "${_INSTANCE}",
+      "${_ENV}",
+      "${_DEPLOYMENT_TYPE}"
+    ]
+    waitFor: 
+      - dependency-installation
+
+  # Invoke preference deployment  
+  - name: python
+    id: preference-deployment
+    entrypoint: python
+    args: [
+      "build/scripts/preference-deployment.py",
+      "${_PROJECT_ID}",
+      "${_REGION}",
+      "${_SERVICE_ACCOUNT_FILE}",
+      "${_INSTANCE}",
+      "${_ENV}",
+      "${_DEPLOYMENT_TYPE}"
+      ]
+    waitFor: 
+    - namespace-creation
+
+  # Invoke Plugin deployment   
+  - name: python
+    id: plugin-deployment
+    entrypoint: python
+    args: [
+      "build/scripts/plugin-deployment.py",
+      "${_PROJECT_ID}",
+      "${_REGION}",
+      "${_SERVICE_ACCOUNT_FILE}",
+      "${_INSTANCE}",
+      "${_ENV}",
+      "${_DEPLOYMENT_TYPE}"
+      ]
+    waitFor: 
+    - preference-deployment
+
+  # Deploy pipeline   
+  - name: python
+    id: pipeline-deployment
+    entrypoint: python
+    args: [
+      "build/scripts/pipeline-deployment.py",
+      "${_PROJECT_ID}",
+      "${_REGION}",
+      "${_SERVICE_ACCOUNT_FILE}",
+      "${_INSTANCE}",
+      "${_ENV}",
+      "${_DEPLOYMENT_TYPE}"
+      ]
+    waitFor: 
+    - plugin-deployment
+
+
